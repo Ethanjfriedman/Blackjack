@@ -8,31 +8,32 @@
   <body>
     <main class='gameboard'>
       <section id='player-section'>
-        <div class='card player-card'>6D</div>
-        <div class='card player-card'>2S</div>
-        <div class='card player-card'>3H</div>
-        <div class='card player-card'>5C</div>
-        <div class='card player-card'>5D</div>
+        <div class='card player-card clubs four'></div>
+        <div class='card player-card diamonds seven'></div>
+        <div class='card player-card hearts nine'></div>
+        <div class='card player-card spades jack'></div>
       </section>
       <section id='info-section'>Player hits. New total: 21!</section>
       <section id='dealer-section'>
-        <div class='card dealer-card'>QS</div>
-        <div class='card dealer-card card-back'>'card'</div>
+        <div class='card dealer-card spades king'></div>
+        <div class='card dealer-card card-back'></div>
       </section>
       <section id='controls'>
-        <div id='current-bet-div'>
+        <div id='current-bet-div'class='hidden'>
           <p id='current-bet'>Current bet: $100</p>
           <button id='increment-up'>UP</button>
           <button id='increment-down'>DOWN</button>
         </div>
-        <button id='hit'>Hit</button>
-        <button id='stand'>Stand</button>
-        <div id='bankroll-div'>
+        <button id='hit' class='hidden'>Hit</button>
+        <button id='start'>Start</button>
+        <button id='stand'class='hidden'>Stand</button>
+        <div id='bankroll-div' class='hidden'>
           <p id='bankroll'>Bankroll: $1,125</p>
           <button id='add-money'>Add money</button>
         </div>
       </section>
     </main>
+    <script src="scripts/cards.js"></script>
     <script src="scripts/game.js"></script>
   </body>
 </html>

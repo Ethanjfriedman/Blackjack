@@ -8,6 +8,10 @@
   margin: 10px
 }
 
+.hidden {
+  display: none;
+}
+
 section {
   position: relative;
   display: block;
@@ -37,11 +41,20 @@ section {
 }
 
 .card {
-  height: 150px;
-  width: 80px;
-  border: 1px solid black;
+  height: 98px;
+  width: 73px;
+  border: none;
   background-color: tan;
   margin-right: 10px;
+  background-image: url(classic-playing-cards.png);
+}
+
+.card-back {
+  background-image: none;
+  background-color: red;
+  border: 1px solid black;
+  border-radius: 3px;
+  height: 96px;
 }
 
 #bankroll, #current-bet {
