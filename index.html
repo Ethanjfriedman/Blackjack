@@ -2,40 +2,37 @@
   <head>
     <title>Blackjack</title>
     <script src="scripts/jquery-2.1.4.min.js"></script>
-    <link rel="stylesheet" href="styles/game.css">
+    <link rel="stylesheet" href="styles/display.css">
     <link rel="stylesheet" href="styles/cards.css">
   </head>
   <body>
-    <div id='title'>
-      <p>BLACKJACK</p>
-    </div>
-    <div id='gameboard'>
-      <div id='player-section' class='section'>
-        <div id='player-name' class='hand-name'>Player's Name Here</div>
-        <div id='player-hand' class='hand-of-cards'>
-          <div class='card player-card'>6D</div>
-          <div class='card player-card'>2S</div>
-          <div class='card player-card'>3H</div>
-          <div class='card player-card'>5C</div>
-          <div class='card player-card'>5D</div>
+    <main class='gameboard'>
+      <section id='player-section'>
+        <div class='card player-card'>6D</div>
+        <div class='card player-card'>2S</div>
+        <div class='card player-card'>3H</div>
+        <div class='card player-card'>5C</div>
+        <div class='card player-card'>5D</div>
+      </section>
+      <section id='info-section'>Player hits. New total: 21!</section>
+      <section id='dealer-section'>
+        <div class='card dealer-card'>QS</div>
+        <div class='card dealer-card card-back'>'card'</div>
+      </section>
+      <section id='controls'>
+        <div id='current-bet-div'>
+          <p id='current-bet'>Current bet: $100</p>
+          <button id='increment-up'>UP</button>
+          <button id='increment-down'>DOWN</button>
         </div>
-        <div id='betting-section' class='section'>
-          <div class='bet-title'>Current Bet</div>
-          <div id='bet-field'>
-            <button id='increment-up'>UP</button>
-            <div id='current-bet'>$100</div>
-            <button id='increment-down'>DOWN</button>
-          </div>
-          <div class='bet-title'>Bankroll</div>
-          <div id='bankroll-field'>
-            <div id='bankroll'>$1,125</div>
-            <button id='add-funds'>Add funds</button>
-          </div>
+        <button id='hit'>Hit</button>
+        <button id='stand'>Stand</button>
+        <div id='bankroll-div'>
+          <p id='bankroll'>Bankroll: $1,125</p>
+          <button id='add-money'>Add money</button>
         </div>
-        <div id='info-display'>Player hits. New total: 21! Dealer's turn.</div>
-        <div id='dealer-section' class='section'>
-          
-    </div>
+      </section>
+    </main>
     <script src="scripts/game.js"></script>
   </body>
 </html>
