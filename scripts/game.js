@@ -146,8 +146,6 @@ var game = {
   beginGame: function() {
     var $start = $('#start');
     $start.on('click', function(eventObject) {
-      game.setStandButton();
-      game.setHitButton();
       game.setBetButtons();
       $start.addClass('hidden'); //start off by hiding start buttons and revealing other 'control' elements
       $thingsToShow = $('#current-bet-div, #bankroll-div, #hit, #stand');
@@ -157,7 +155,11 @@ var game = {
       if (!game.player.currentBet) {
         var $p = $('<p>').text('Please place a bet to begin play.');
         game.views.renderDisplay($p);
+        console.log('no bet entered. also: foo');
       } else {
+        console.log('bet entered. and bar');
+        game.setStandButton();
+        game.setHitButton();
         cards.initializeDeck();
         for (var i = 0; i < 4; i++) { //deals the initial two cards to each player TODO: change if multiplayer
           if (i % 2) {
