@@ -5,7 +5,7 @@ var game = {
 
   player: { //TODO: create a player constructor function to add multiple players. way down the road!
     name: "player",
-    bankroll: 1500,
+    bankroll: 150,
     currentBet: 0,
     cardTotal: 0,
     blackjack: false,
@@ -32,6 +32,7 @@ var game = {
   },
 
   updateTotal: function(person) { //'person' will be 'player' or 'dealer' accordingly
+    console.log('updating total...');
     person.cardTotal = 0; //resets the total to zero
     var acesInHand = 0; //counter for number of aces in hand
     for (var i = 0; i < person.hand.length; i++) { //loops through each card in the hand
@@ -84,6 +85,7 @@ var game = {
     console.log('running the end of hand function now. player total ' + this.player.cardTotal + ", dealer total " + this.dealer.cardTotal);
     $('#hit, #stand').attr('disabled', 'true'); //disables the 'hit' and 'stand' buttons
     $('.dealer-card').removeClass('card-back'); //reveals hidden dealer cards
+    console.log('dealer cards should now be visible');
     var playerTotal = this.player.cardTotal;
     var dealerTotal = this.dealer.cardTotal;
     var payout = this.views.makeCurrency(this.player.currentBet);
@@ -96,7 +98,7 @@ var game = {
       var $p = $('<p>').text("You've gone bust! Math hint: " + playerTotal + " is greater than 21.");
       this.views.renderDisplay($p);
       this.loser();
-    } else if (playerTotal < dealerTotal && dealerTotal < 21) {
+    } else if ((playerTotal < dealerTotal) && dealerTotal <= 21) {
       var $p = $('<p>').text("Sorry, you lose. Dealer total: " + dealerTotal + ", player total: " + playerTotal + ".");
       this.views.renderDisplay($p);
       this.loser();
@@ -105,6 +107,7 @@ var game = {
       var $p = $('<p>').text("Congratulations! Blackjack pays out at 3 to 2 for " + blackjackPayout + ".");
       this.views.renderDisplay($p);
       this.player.bankroll += blackjackPayout;
+      this.views.renderBankroll();
       this.resetHand();
     } else if (dealerTotal > 21) {
       var $p = $('<p>').text("Dealer has " + dealerTotal + " and has gone bust! Bet pays: " + payout + ".");
@@ -126,19 +129,23 @@ var game = {
   },
 
   loser: function() {
+    console.log('loser function running');
     this.player.bankroll -= game.player.currentBet;
     this.checkBankroll();
+    this.views.renderBankroll();
     this.resetHand();
   },
 
   winner: function() {
+    console.log('winner function running');
     this.player.bankroll += game.player.currentBet;
+    this.views.renderBankroll();
     this.resetHand();
   },
 
   checkBankroll: function() {
     if (this.player.bankroll <= 0) {
-      var $p = $('<p>').text("Uh-oh, you're out of cash... Sorry! game over"); //TODO add more cash? RESET GAME?
+      var $p = $('<p>').text("Uh-oh, you're out of cash... Press 'add money' to add more"); //TODO add more cash? RESET GAME?
       this.views.renderDisplay($p);
     }
   },
@@ -146,31 +153,38 @@ var game = {
   beginGame: function() {
     var $start = $('#start');
     $start.on('click', function(eventObject) {
-      $start.addClass('hidden'); //start off by hiding start buttons and revealing other 'control' elements
-      $thingsToShow = $('#current-bet-div, #bankroll-div, #hit, #stand');
-      $thingsToShow.removeClass('hidden');
-      game.setBetButtons();
+      $start.text('Deal');
+      $('#current-bet-div, #bankroll-div, #hit, #stand').removeClass('hidden');
       game.views.renderBetView();
+      game.views.renderBankroll();
+      game.setBetButtons();
       $('#hit, #stand').removeAttr('disabled');
       game.$infoSection.html(''); //clears out the initial welcome message
+      var $p = $('<p>').text('Please enter a bet to begin play.');
+      game.views.renderDisplay($p);
+      game.setAddMoneyButton();
       if (game.player.currentBet > 0) {
         game.setStandButton();
         game.setHitButton();
         cards.initializeDeck();
-        for (var i = 0; i < 4; i++) { //deals the initial two cards to each player TODO: change if multiplayer
-          if (i % 2) {
-            game.dealACard(game.dealer); //2nd and 4th cards from top dealt to dealer
-          } else {
-            game.dealACard(game.player); //1st and 3rd cards from top dealt to player
-          }
-        }
-        var $p = $('<p>').text('Shuffling ... and dealing initial cards...  Do you want to hit or stand?');
-        game.views.renderDisplay($p);
-      } else {
-        var $p = $('<p>').text('Please enter a bet to begin play.');
+        game.initialDeal();
+        var $p = $('<p>').text('Bet is ' + game.player.currentBet + '... Shuffling ... and dealing initial cards...  Do you want to hit or stand?');
         game.views.renderDisplay($p);
       }
     });
+  },
+
+  initialDeal: function() {
+    //CODE HERE FOR HANDS AFTER THE FIRST ONE?
+    this.player.hand = [];
+    this.dealer.hand = [];
+    for (var i = 0; i < 4; i++) { //deals the initial two cards to each player TODO: change if multiplayer
+      if (i % 2) {
+        game.dealACard(game.dealer); //2nd and 4th cards from top dealt to dealer
+      } else {
+        game.dealACard(game.player); //1st and 3rd cards from top dealt to player
+      }
+    }
   },
 
   views: {
@@ -183,13 +197,11 @@ var game = {
     }, //i.e., num is a decimal, 1535.676 -- returns $1,535.68
 
     renderBetView: function() {
-      var bet = game.player.currentBet;
-      $('#current-bet').text('Current bet: ' + this.makeCurrency(bet));
+      $('#current-bet').text('Current bet: ' + this.makeCurrency(game.player.currentBet));
     },
 
     renderBankroll: function() {
-      var bankRoll = game.player.bankroll;
-      $('#bankroll').text(game.views.makeCurrency(bankRoll));
+      $('#bankroll').text('Bankroll: ' + this.makeCurrency(game.player.bankroll));
     },
 
     cardViews: [],
@@ -207,6 +219,11 @@ var game = {
     addCardView: function(person) { //should create a cardView for each card (as it's dealt) to the DOM
       this.cardViews.push(new this.CardView(person, person.hand.length - 1));
       this.renderCard(this.cardViews[this.cardViews.length - 1]);
+    },
+
+    unrenderCardViews: function() { //THIS IS UGLY TODO: CLEANUP
+      $('#player-section').html('');
+      $('#dealer-section').html('');
     },
 
     renderCard: function(cardView) { //adds the card to the DOM
@@ -241,37 +258,64 @@ var game = {
       var $p = $('<p>').text("Hitting ... here's another card."); //TODO I would like to display the new total
       game.views.renderDisplay($p);
       game.dealACard(game.player);
+      console.log('hitting player. this should only run once per click.');
     });
   },
 
   setBetButtons: function() {
-    var $betMore = $('#increment-up');
-    var $betLess = $('#increment-down');
-    $betMore.on('click', function(eventObject) {
-      var bet = game.player.currentBet;
-      var bankRoll = game.player.bankroll;
-      if ((bankRoll -= (bet + 25)) > 0) {
-        game.player.currentBet += 25;
-        console.log(game.player.currentBet);
+    var increment = 25;
+  $('#increment-up').on('click', function(eventObject) {
+      if (game.player.bankroll >= increment) {
+        game.player.currentBet += increment;
+        game.player.bankroll -= increment;
+        console.log('bet: ' + game.player.currentBet + '; bankroll: ' + game.player.bankroll);
         game.views.renderBetView();
+        game.views.renderBankroll();
+      } else {
+        var $p = $('<p>').text( "You cannot increase your bet any more. Select 'add money' to increase your bankroll, you high roller you.");
+        game.views.renderDisplay($p);
       }
+    });
+
+    $('#increment-down').on('click', function(eventObject) {
+      if (game.player.currentBet >= increment) {
+        game.player.currentBet -= increment;
+        game.player.bankroll += increment;
+        console.log('bet: ' + game.player.currentBet + '; bankroll: ' + game.player.bankroll);
+        game.views.renderBetView();
+        game.views.renderBankroll();
+      }
+    });
+  },
+
+  setAddMoneyButton: function() {
+    console.log('adding $');
+    $('#add-money').on('click', function(eventObject) {
+      alert('$1,000 has automatically been debited from your PayPal account.');
+      game.player.bankroll += 1000;
+      game.views.renderBankroll();
     });
   },
 
   resetHand: function() {
     var $start = $('#start')
     $start.text('Deal again');
-    $start.removeClass('hidden')
-    $('.bet-button, #hit, #start').removeAttr('disabled');
-    //all sorts of shit goes in here!!!
-    //TODO: stuff that needs to be reset when ending a hand: player.blackjack, dealer.blackjack,
-    //player.currentBet(?)--way to keep bet going(?) player.hand, dealer.hand (if applicable: player.secondHand)
-    //player.cardTotal, dealer.cardTotal, views.cardViews, buttons need to be re-set(or do they? maybe not)
-    //leave existing buttons and add deal next hand! maybe make this the start button, just change the text
-    //also deck needs to be re-initialized. (empty out cards.deck first)
-    //also remove disabled class from all buttons....
-
-    //ALSO: SHOULD WE PERMIT CARD COUNTING BY ** NOT ** RESETTING THE DECK? IF SO, MAYBE MAKE A 4-, 6- OR 8-DECK GAME?
+    $start.on('click', function(eventObject) {
+      $start.removeClass('hidden')
+      $('.bet-button, #hit, #start').removeAttr('disabled');
+      if (game.player.currentBet > game.player.bankroll) {
+        game.player.currentBet = 0;
+      }
+      game.player.blackjack = false;
+      game.dealer.blackjack = false;
+      game.player.hand = [];
+      game.dealer.hand =[];
+      game.player.cardTotal = 0;
+      game.dealer.cardTotal = 0;
+      game.views.cardViews = [];
+      game.views.unrenderCardViews();
+      game.initialDeal(); //currently NOT resetting the deck between deals!
+    })
   }
 };
 

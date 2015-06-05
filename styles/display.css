@@ -25,14 +25,12 @@ section {
 }
 
 #player-section, #dealer-section {
-  background-color: yellow;
   height: 20%;
   justify-content: flex-start;
 }
 
 #info-section {
   height: 10%;
-  background-color: violet;
   display: block;
   padding: 5px;
   display: flex;
@@ -48,7 +46,6 @@ p {
 
 #controls {
   height: 13%;
-  background-color: orange;
   padding-bottom: 20px;
 }
 #bankroll, #current-bet {
@@ -71,4 +68,9 @@ button {
 
 #stand {
   padding-left: 7.5px;
+}
+
+#paypal {
+  width: 120px;
+  background: none;
 }
