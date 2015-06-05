@@ -146,18 +146,14 @@ var game = {
   beginGame: function() {
     var $start = $('#start');
     $start.on('click', function(eventObject) {
-      game.setBetButtons();
       $start.addClass('hidden'); //start off by hiding start buttons and revealing other 'control' elements
       $thingsToShow = $('#current-bet-div, #bankroll-div, #hit, #stand');
       $thingsToShow.removeClass('hidden');
+      game.setBetButtons();
       game.views.renderBetView();
       $('#hit, #stand').removeAttr('disabled');
-      if (!game.player.currentBet) {
-        var $p = $('<p>').text('Please place a bet to begin play.');
-        game.views.renderDisplay($p);
-        console.log('no bet entered. also: foo');
-      } else {
-        console.log('bet entered. and bar');
+      game.$infoSection.html(''); //clears out the initial welcome message
+      if (game.player.currentBet > 0) {
         game.setStandButton();
         game.setHitButton();
         cards.initializeDeck();
@@ -168,8 +164,10 @@ var game = {
             game.dealACard(game.player); //1st and 3rd cards from top dealt to player
           }
         }
-        game.$infoSection.html(''); //clears out initial welcome message
         var $p = $('<p>').text('Shuffling ... and dealing initial cards...  Do you want to hit or stand?');
+        game.views.renderDisplay($p);
+      } else {
+        var $p = $('<p>').text('Please enter a bet to begin play.');
         game.views.renderDisplay($p);
       }
     });
