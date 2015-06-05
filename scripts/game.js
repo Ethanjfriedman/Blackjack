@@ -6,7 +6,7 @@ var game = {
   player: { //TODO: create a player constructor function to add multiple players. way down the road!
     name: "player",
     bankroll: 1500,
-    currentBet: 100, //TODO: CHANGE THIS TO ZERO AT THE START!
+    currentBet: 0,
     cardTotal: 0,
     blackjack: false,
     hand: [],
@@ -88,34 +88,34 @@ var game = {
     var dealerTotal = this.dealer.cardTotal;
     var payout = this.views.makeCurrency(this.player.currentBet);
 
-    if (this.dealer.blackjack) {
-      var $p = $('<p>').text("Dealer wins.");
+    if (this.dealer.blackjack) { //this code is hideous. TODO: refactor into separate function? Or
+      var $p = $('<p>').text("Dealer wins."); //come up with a cleaner way?
       this.views.renderDisplay($p);
       this.loser();
     } else if (playerTotal > 21) {
       var $p = $('<p>').text("You've gone bust! Math hint: " + playerTotal + " is greater than 21.");
       this.views.renderDisplay($p);
       this.loser();
-    } else if (playerTotal < dealerTotal) {
-      var $p = $('<p>').text("Sorry, you lose. Dealer total: " + dealerTotal + ", player total: " + playerTotal);
+    } else if (playerTotal < dealerTotal && dealerTotal < 21) {
+      var $p = $('<p>').text("Sorry, you lose. Dealer total: " + dealerTotal + ", player total: " + playerTotal + ".");
       this.views.renderDisplay($p);
       this.loser();
     } else if (this.player.blackjack) {
       var blackjackPayout = this.views.makeCurrency(1.5 * this.player.currentBet);
-      var $p = $('<p>').text("Congratulations! Blackjack pays out at 3 to 2 for " + blackjackPayout);
+      var $p = $('<p>').text("Congratulations! Blackjack pays out at 3 to 2 for " + blackjackPayout + ".");
       this.views.renderDisplay($p);
       this.player.bankroll += blackjackPayout;
       this.resetHand();
     } else if (dealerTotal > 21) {
-      var $p = $('<p>').text("Dealer has " + dealerTotal + " and has gone bust! Bet pays: " + payout);
+      var $p = $('<p>').text("Dealer has " + dealerTotal + " and has gone bust! Bet pays: " + payout + ".");
       this.views.renderDisplay($p);
       this.winner();
     } else if (playerTotal > dealerTotal) {
-      var $p = $('<p>').text("You win! Your total: " + playerTotal + ", dealer total: " + dealerTotal + ". Payout is " + payout);
+      var $p = $('<p>').text("You win! Your total: " + playerTotal + ", dealer total: " + dealerTotal + ". Payout is " + payout + ".");
       this.views.renderDisplay($p);
       this.winner();
     } else if (playerTotal === dealerTotal) {
-      var $p = $('<p>').text("It's a push! Player and dealer are tied with " + playerTotal + " each. All bets refunded");
+      var $p = $('<p>').text("It's a push! Player and dealer are tied with " + playerTotal + " each. All bets refunded.");
       this.views.renderDisplay($p);
       this.resetHand();
     } else {
@@ -146,23 +146,30 @@ var game = {
   beginGame: function() {
     var $start = $('#start');
     $start.on('click', function(eventObject) {
+      game.setStandButton();
+      game.setHitButton();
+      game.setBetButtons();
       $start.addClass('hidden'); //start off by hiding start buttons and revealing other 'control' elements
       $thingsToShow = $('#current-bet-div, #bankroll-div, #hit, #stand');
       $thingsToShow.removeClass('hidden');
+      game.views.renderBetView();
       $('#hit, #stand').removeAttr('disabled');
-      cards.initializeDeck();
-      for (var i = 0; i < 4; i++) { //deals the initial two cards to each player
-        if (i % 2) {
-          game.dealACard(game.dealer); //2nd and 4th cards from top dealt to dealer
-        } else {
-          game.dealACard(game.player); //1st and 3rd cards from top dealt to player
+      if (!game.player.currentBet) {
+        var $p = $('<p>').text('Please place a bet to begin play.');
+        game.views.renderDisplay($p);
+      } else {
+        cards.initializeDeck();
+        for (var i = 0; i < 4; i++) { //deals the initial two cards to each player TODO: change if multiplayer
+          if (i % 2) {
+            game.dealACard(game.dealer); //2nd and 4th cards from top dealt to dealer
+          } else {
+            game.dealACard(game.player); //1st and 3rd cards from top dealt to player
+          }
         }
+        game.$infoSection.html(''); //clears out initial welcome message
+        var $p = $('<p>').text('Shuffling ... and dealing initial cards...  Do you want to hit or stand?');
+        game.views.renderDisplay($p);
       }
-      game.$infoSection.html(''); //clears out initial welcome message
-      var $p = $('<p>').text('Shuffling ... and dealing initial cards...  Do you want to hit or stand?');
-      game.views.renderDisplay($p);
-      game.setStandButton();
-      game.setHitButton();
     });
   },
 
@@ -176,12 +183,17 @@ var game = {
     }, //i.e., num is a decimal, 1535.676 -- returns $1,535.68
 
     renderBetView: function() {
-        var bet = game.player.currentBet;
-        var $betDisplay = $('#current-bet');
-        $betDisplay.text(this.makeCurrency(bet));
+      var bet = game.player.currentBet;
+      $('#current-bet').text('Current bet: ' + this.makeCurrency(bet));
+    },
+
+    renderBankroll: function() {
+      var bankRoll = game.player.bankroll;
+      $('#bankroll').text(game.views.makeCurrency(bankRoll));
     },
 
     cardViews: [],
+
     CardView: function(person, cardID) { //cardView constructor function. currently works one card at a time on newly dealt cards
       this.card = person.hand[cardID];
       this.$el = $('<div>').addClass('card').addClass((person.name + '-card'));
@@ -226,9 +238,23 @@ var game = {
     var $hit = $('#hit'); //heh heh...  what a $hitty variable...
     $hit.removeAttr('disabled');
     $hit.on('click', function(eventObject) {
-      var $p = $('<p>').text("Hitting ... here's another card.");
+      var $p = $('<p>').text("Hitting ... here's another card."); //TODO I would like to display the new total
       game.views.renderDisplay($p);
       game.dealACard(game.player);
+    });
+  },
+
+  setBetButtons: function() {
+    var $betMore = $('#increment-up');
+    var $betLess = $('#increment-down');
+    $betMore.on('click', function(eventObject) {
+      var bet = game.player.currentBet;
+      var bankRoll = game.player.bankroll;
+      if ((bankRoll -= (bet + 25)) > 0) {
+        game.player.currentBet += 25;
+        console.log(game.player.currentBet);
+        game.views.renderBetView();
+      }
     });
   },
 
