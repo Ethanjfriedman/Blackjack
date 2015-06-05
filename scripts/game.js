@@ -86,7 +86,7 @@ var game = {
     $('.dealer-card').removeClass('card-back'); //reveals hidden dealer cards
     var playerTotal = this.player.cardTotal;
     var dealerTotal = this.dealer.cardTotal;
-    var payout = this.player.currentBet;
+    var payout = this.views.makeCurrency(this.player.currentBet);
 
     if (this.dealer.blackjack) {
       var $p = $('<p>').text("Dealer wins.");
@@ -101,7 +101,7 @@ var game = {
       this.views.renderDisplay($p);
       this.loser();
     } else if (this.player.blackjack) {
-      var blackjackPayout = 1.5 * this.player.currentBet;
+      var blackjackPayout = this.views.makeCurrency(1.5 * this.player.currentBet);
       var $p = $('<p>').text("Congratulations! Blackjack pays out at 3 to 2 for " + blackjackPayout);
       this.views.renderDisplay($p);
       this.player.bankroll += blackjackPayout;
@@ -167,13 +167,20 @@ var game = {
   },
 
   views: {
-    betView: {
-      bet: game.player.currentBet,
-      renderBetView: function() {
-        var $betDisplay = $('#current-bet');
-        $betDisplay.text('$')
+    makeCurrency: function(num) {
+      if (parseInt(num) === parseFloat(num)) { //i.e., num is an integer like 1525 -- returns $1,525
+        return num.toLocaleString('eng', { style: 'currency', currency: 'USD'});
+      } else {
+      return num.toLocaleString('eng', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
+    }, //i.e., num is a decimal, 1535.676 -- returns $1,535.68
+
+    renderBetView: function() {
+        var bet = game.player.currentBet;
+        var $betDisplay = $('#current-bet');
+        $betDisplay.text(this.makeCurrency(bet));
     },
+
     cardViews: [],
     CardView: function(person, cardID) { //cardView constructor function. currently works one card at a time on newly dealt cards
       this.card = person.hand[cardID];
