@@ -33,31 +33,42 @@ section {
 #info-section {
   height: 10%;
   background-color: violet;
+  display: block;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+}
+
+p {
+  height: 31%;
+  padding: 0;
+  margin: 1px;
 }
 
 #controls {
-  height: 10%;
+  height: 13%;
   background-color: orange;
+  padding-bottom: 20px;
 }
-
-.card {
-  height: 98px;
-  width: 73px;
-  border: none;
-  background-color: tan;
-  margin-right: 10px;
-  background-image: url(classic-playing-cards.png);
-}
-
-.card-back {
-  background-image: none;
-  background-color: red;
-  border: 1px solid black;
-  border-radius: 3px;
-  height: 96px;
-}
-
 #bankroll, #current-bet {
   border: 1px solid black;
   padding: 5px;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+button {
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+#hit, #stand {
+  width: 50px;
+}
+
+#stand {
+  padding-left: 7.5px;
 }
