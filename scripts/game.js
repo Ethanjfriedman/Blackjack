@@ -11,6 +11,7 @@ var game = {
     blackjack: false,
     hand: [],
     secondHand: [], //TODO: this will hold the split hand if/when the 'split' ability is implemented
+    insurance: false,
   },
 
   dealer: {
@@ -21,7 +22,7 @@ var game = {
   },
 
   dealACard: function(person) { //'person' will be 'player' or 'dealer' accordingly
-    console.log('dealing card ' + cards.deck.splice(0,1)[0]);
+    //console.log('dealing card ' + cards.deck.splice(0,1)[0]);
     var dealtCard = cards.deck.splice(0,1)[0]; //removes card from the deck
     //note that this removes the TOPMOST card of the deck which means deck MUST be shuffled before calling this!
     dealtCard.handInWhich = person.name;
@@ -49,8 +50,8 @@ var game = {
       } //to see if total > 21, if so it will subtract 10 (counting that ace as 1 instead of 11). It will do this
     } //multiple times if you have multiple aces, each time checking to see if it has to subtract 10.
 
-    if (person.name == 'player') { //ISSUE FIXED. THIS CODE NOW RUNS.
-      console.log('displaying revised total');
+    if (person.name == 'player' && person.hand.length > 1) { //ISSUE FIXED. THIS CODE NOW RUNS.
+      // console.log('displaying revised total');
       var $p = $('<p>').text('Dealing card. New total is ' + person.cardTotal);
       this.views.renderDisplay($p);
     }
@@ -61,22 +62,19 @@ var game = {
   },
 
   checkForBlackjack: function(person) {
-    //console.log('checking for blackjack...' + 'hand-length ' + person.hand.length + '; point-total ' + person.cardTotal);
     console.log('checking for blackjack');
-    if (person.hand.length === 2 && person.cardTotal === 21) { //if you have 2 cards and 21 points, then you've
+    if (person.hand.length === 2 && person.cardTotal === 21 && person.name == 'dealer') { //if you have 2 cards and 21 points, then you've
       person.blackjack = true; //the person got blackjack
-      if (person.name === 'dealer') { //if dealer has blackjack hand is over!
         var $p = $('<p>').text('Dealer has blackjack!');
         this.views.renderDisplay($p);
         $('.dealer-card').removeClass('card-back');
         console.log('I should have removed the dealer card back display. Did I?');
         this.endOfHand(); //end the hand
-      } else if (this.dealer.blackjack === false && this.dealer.hand.length >= 2) {
+      } else if (person.hand.length === 2 && person.cardTotal === 21 && person.name == 'player') {
         var $p = $('<p>').text('You have blackjack!');
         this.views.renderDisplay($p);
-        this.endOfHand(); //conditional above in case we're checking the player for blackjack before dealer has both cards!
+        this.endOfHand();
       } //this means player has blackjack AND dealer does not.
-    }
   },
 
   stand: function() {
@@ -102,12 +100,22 @@ var game = {
     var playerTotal = this.player.cardTotal;
     var dealerTotal = this.dealer.cardTotal;
     var payout = this.views.makeCurrency(this.player.currentBet);
+    $('#start').removeAttr('disabled');
 
     if (this.dealer.blackjack) { //this code is hideous. TODO: refactor into separate function? Or
-      console.log('result: dealer blackjack');
-      var $p = $('<p>').text("Dealer wins."); //come up with a cleaner way?
-      this.views.renderDisplay($p);
-      this.loser();
+      if (this.player.insurance) {
+        console.log('result: dealer blackjack');
+        var $p = $('<p>').text("Dealer wins--but you bought insurance. Regular bet lost; insurance pays out at 2:1");
+        this.views.renderDisplay($p);
+        this.player.bankroll += this.player.insurance;
+        this.views.renderBankroll();
+        this.resetHand();
+      } else {
+        console.log('result: dealer blackjack');
+        var $p = $('<p>').text("Dealer wins."); //come up with a cleaner way?
+        this.views.renderDisplay($p);
+        this.loser();
+      }
     } else if (playerTotal > 21) {
       console.log('result: player bust');
       var $p = $('<p>').text("You've gone bust! Your total of " + playerTotal + " is greater than 21.");
@@ -176,7 +184,7 @@ var game = {
     $start.on('click', function(eventObject) {
       console.log('beginning the game.');
       $start.text('Deal');
-      $('#current-bet-div, #bankroll-div, #hit, #stand, #double-down').removeClass('hidden');
+      $('#current-bet-div, #bankroll-div, #hit, #stand').removeClass('hidden');
       game.views.renderBetView();
       game.views.renderBankroll();
       game.setBetButtons();
@@ -207,9 +215,35 @@ var game = {
         game.dealACard(game.player); //1st and 3rd cards from top dealt to player
       }
     }
+    $('#start, .bet-button').attr('disabled','true');
     this.setDoubleDownButton();
-    console.log('setting double down button(?)');
     this.setHitButton();
+    if (game.dealer.hand[0].value == 'ace') { //TODO add capability for insurance
+      //this.setInsurance(); TODO: THIS IS COMMENTED OUT FOR NOW.
+    }
+  },
+
+  setInsurance: function() {
+    var $insurance = $('#insurance');
+    $insurance.removeAttr('disabled');
+    var insuranceAmount = this.player.currentBet / 2;
+    if (insuranceAmount > this.player.bankroll) {
+      var $p = $('<p>').text("Dealer is showing an ace but you don't have enough money to buy insurance against dealer blackjack.");
+      this.views.renderDisplay($p);
+    } else {
+      var $p = $('<p>').text("DEALER IS SHOWING AN ACE! Press 'insurance' if you wish to buy insurance against dealer blackjack.");
+      this.views.renderDisplay($p);
+      $insurance.removeClass('hidden');
+      $insurance.on('click', function(eventObject) {
+        eventObject.stopImmediatePropagation();
+        var $p = ('$<p>').text(game.views.makeCurrency(game.player.currentBet / 2) + " of insurance purchased.");
+        this.views.renderDisplay($p);
+        game.player.bankroll -= (game.player.currentBet / 2);
+        game.views.renderBankroll();
+        game.player.insurance = (game.player.currentBet / 2);
+        $('#insurance').addClass('hidden');
+      });
+    }
   },
 
   views: {
@@ -269,6 +303,7 @@ var game = {
   setDoubleDownButton() {
     var $doubleDown = $('#double-down');
     $doubleDown.removeAttr('disabled');
+    $doubleDown.removeClass('hidden');
     $doubleDown.on('click', function(eventObject) {
       eventObject.stopImmediatePropagation();
       if (game.player.bankroll < game.player.currentBet) {
@@ -292,7 +327,8 @@ var game = {
     var $stand = $('#stand');
     $stand.removeAttr('disabled');
     $stand.on('click', function(eventObject) {
-      $('#double-down').attr('disabled','true');
+      $('#double-down').addClass('hidden');
+      $('#insurance').addClass('hidden');
       var $p = $('<p>').text("OK, you're standing put... Dealer is now checking his cards.");
       game.views.renderDisplay($p);
       game.stand();
@@ -306,10 +342,11 @@ var game = {
       // eventObject.preventDefault();
       // eventObject.stopPropagation();
       eventObject.stopImmediatePropagation();
-      $('#double-down').attr('disabled','true');
+      $('#double-down').addClass('hidden');
       var $p = $('<p>').text("Hitting ... here's another card."); //TODO I would like to display the new total
       game.views.renderDisplay($p);
       game.dealACard(game.player);
+      $('#insurance').addClass('hidden');
       console.log('hitting player. this should only run once per click.');
     });
   },
@@ -355,22 +392,29 @@ var game = {
   resetHand: function() {
     var $start = $('#start')
     $start.text('Deal again');
+    $('.bet-button').removeAttr('disabled');
     $start.on('click', function(eventObject) {
-      console.log('resetting the hand.');
-      $start.removeClass('hidden');
-      $('.bet-button, #hit, #start').removeAttr('disabled');
-      if (game.player.currentBet > game.player.bankroll) {
-        game.player.currentBet = 0;
-      }
-      game.player.blackjack = false;
-      game.dealer.blackjack = false;
-      game.player.cardTotal = 0;
-      game.dealer.cardTotal = 0;
-      game.views.cardViews = [];
-      game.views.renderBankroll();
-      game.views.renderBetView();
-      game.views.unrenderCardViews();
-      game.initialDeal(); //currently NOT resetting the deck between deals!
+      if (game.player.currentBet > 0) {
+        //console.log('resetting the hand.');
+        $start.removeClass('hidden');
+        $('.bet-button, #hit, #start').removeAttr('disabled');
+        if (game.player.currentBet > game.player.bankroll) {
+          game.player.currentBet = 0;
+        }
+        game.player.blackjack = false;
+        game.dealer.blackjack = false;
+        game.player.cardTotal = 0;
+        game.dealer.cardTotal = 0;
+        game.views.cardViews = [];
+        game.$infoSection.html('');
+        var $p = $('<p>').text('Dealing a new hand.');
+        game.views.renderDisplay($p);
+        game.views.renderBankroll();
+        game.views.renderBetView();
+        game.views.unrenderCardViews();
+
+        game.initialDeal();
+        } //currently NOT resetting the deck between deals!
     })
   }
 };

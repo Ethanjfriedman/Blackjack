@@ -20,7 +20,7 @@ section {
   display: block;
   margin: 1%;
   padding: 1%;
-  width: 96%;
+  width: 80%;
   display: inline-flex;
   justify-content: space-around;
   text-align: center;
@@ -31,6 +31,7 @@ section {
   height: 18%;
   justify-content: flex-start;
   font-weight: bold;
+  color: white;
 }
 
 #info-section {
@@ -40,6 +41,7 @@ section {
   display: flex;
   flex-direction: column;
   overflow: scroll;
+  color: white;
 }
 
 p {
@@ -53,10 +55,11 @@ p {
   padding-bottom: 20px;
 }
 #bankroll, #current-bet {
-  border: 1px solid black;
+  border: 1px solid white;
   padding: 5px;
   border-radius: 5px;
   margin: 5px;
+  color: white;
 }
 
 button {
@@ -65,6 +68,21 @@ button {
   border-radius: 5px;
   text-align: center;
 }
+.myButton:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ce0100), color-stop(1, #fe1a00));
+	background:-moz-linear-gradient(top, #ce0100 5%, #fe1a00 100%);
+	background:-webkit-linear-gradient(top, #ce0100 5%, #fe1a00 100%);
+	background:-o-linear-gradient(top, #ce0100 5%, #fe1a00 100%);
+	background:-ms-linear-gradient(top, #ce0100 5%, #fe1a00 100%);
+	background:linear-gradient(to bottom, #ce0100 5%, #fe1a00 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ce0100', endColorstr='#fe1a00',GradientType=0);
+	background-color:#ce0100;
+}
+.myButton:active {
+	position:relative;
+	top:1px;
+}
+
 
 #hit, #stand {
   width: 50px;
@@ -73,7 +91,7 @@ button {
 #stand {
   padding-left: 7.5px;
 }
-
+/*
 #paypal {
   margin-bottom: 100px;
   width: 70px;
@@ -85,4 +103,9 @@ button {
 table: {
   height: 12px;
   padding: 1px;
+}*/
+
+span {
+  width: 14%;
+  display: inline-block;
 }

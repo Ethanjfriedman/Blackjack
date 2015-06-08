@@ -1,32 +1,38 @@
 
-
 .card {
-  height: 98px;
-  width: 73px;
+  height: 96px;
+  width: 72px;
   border: none;
   background-color: tan;
   margin-right: 10px;
+  margin-left: 0px;
+  left: 110%;
   background-image: url(classic-playing-cards.png);
+  transition: left 1s ease;
+}
+
+.visible {
+  left: 0%;
 }
 
 .clubs {
-  background-position-y: 0;
+  background-position-y: -1px;
 }
 
 .spades {
-  background-position-y: -98px;
+  background-position-y: -99px;
 }
 
 .hearts {
-  background-position-y: -196px;
+  background-position-y: -197px;
 }
 
 .diamonds {
-  background-position-y: -294px;
+  background-position-y: -295px;
 }
 
 .two {
-  background-position-x: -73.5px;
+  background-position-x: -74.5px;
 }
 
 .three {
@@ -42,7 +48,7 @@
 }
 
 .six {
-  background-position-x: -365.5px;
+  background-position-x: -366.5px;
 }
 
 .seven {
@@ -50,7 +56,7 @@
 }
 
 .eight {
-  background-position-x: -511.5px;
+  background-position-x: -512.5px;
 }
 
 .nine {
@@ -58,7 +64,7 @@
 }
 
 .ten {
-  background-position-x: -657.5px;
+  background-position-x: -658.5px;
 }
 
 .jack {
@@ -66,11 +72,15 @@
 }
 
 .queen {
-  background-position-x: -803px;
+  background-position-x: -804px;
 }
 
 .king {
-  background-position-x: -876px;
+  background-position-x: -877px;
+}
+
+.ace {
+  background-position-x: -1px;
 }
 
 .card-back {
@@ -82,8 +92,4 @@
   border: 1px solid black;
   border-radius: 3px;
   height: 96px;
-}
-
-#deck {
-  align-self:flex-end;
 }
