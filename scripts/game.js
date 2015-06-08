@@ -23,12 +23,12 @@ var game = {
   dealACard: function(person) { //'person' will be 'player' or 'dealer' accordingly
     var dealtCard = cards.deck.splice(0,1)[0]; //removes card from the deck
     //note that this removes the TOPMOST card of the deck which means deck MUST be shuffled before calling this!
-    dealtCard.isDealt = true; //TODO: see if this property is necessary later!!
+    //dealtCard.isDealt = true; //TODO: see if this property is necessary later!!
     dealtCard.handInWhich = person.name;
     person.hand.push(dealtCard); //puts the dealt card into the person's hand //checks to see if there's a blackjack (sorta obviously)
-    this.updateTotal(person); //will update the total score of the person's hand
-    this.checkForBlackjack(person); //does exactly what you might think: checks for blackjack
-    this.views.addCardView(person) //will create a new cardView for this card
+    game.updateTotal(person); //will update the total score of the person's hand
+    game.checkForBlackjack(person); //does exactly what you might think: checks for blackjack
+    game.views.addCardView(person);   //will create a new cardView for this card
   },
 
   updateTotal: function(person) { //'person' will be 'player' or 'dealer' accordingly
@@ -48,6 +48,13 @@ var game = {
         console.log(person.name + ' has an ace! checking totals');
       } //to see if total > 21, if so it will subtract 10 (counting that ace as 1 instead of 11). It will do this
     } //multiple times if you have multiple aces, each time checking to see if it has to subtract 10.
+
+    if (person == 'player') { //FIXME: why isn't this code running?
+      console.log('displaying revised total');
+      var $p = $('<p>').text('Dealing card. New total is ' + person.cardTotal);
+      this.views.renderDisplay($p);
+    }
+
     if (person.cardTotal > 21) {
       this.endOfHand();
     }
@@ -55,11 +62,13 @@ var game = {
 
   checkForBlackjack: function(person) {
     //console.log('checking for blackjack...' + 'hand-length ' + person.hand.length + '; point-total ' + person.cardTotal);
+    console.log('checking for blackjack');
     if (person.hand.length === 2 && person.cardTotal === 21) { //if you have 2 cards and 21 points, then you've
       person.blackjack = true; //got blackjack
       if (person.name === 'dealer') { //if dealer has blackjack hand is over!
         var $p = $('<p>').text('Dealer has blackjack!');
         this.views.renderDisplay($p);
+        $('.dealer-card').removeClass('card-back');
         this.endOfHand(); //end the hand
       } else if (this.dealer.blackjack === false && this.dealer.hand.length >= 2) {
         var $p = $('<p>').text('You have blackjack!');
@@ -71,14 +80,15 @@ var game = {
 
   stand: function() {
     $('#hit, #stand').attr('disabled', 'true') //disables the 'hit' and stand buttons so you can't hit after choosing to stand
-    while (this.dealer.cardTotal < 16) { //dealer stands on 17 and up, hits on 16 and under
+    while (this.dealer.cardTotal < 17) { //dealer stands on 17 and up, hits on 16 and under
       var $p = $('<p>').text("Dealer is taking another card...");
       this.views.renderDisplay($p);
-      this.dealACard(this.dealer); //adds a card to the dealer's hand
+      game.dealACard(game.dealer);//adds a card to the dealer's hand
     }
     var $pNew = $('<p>').text("Dealer is standing with " + this.dealer.hand.length + " cards. Let's see what they are.");
     this.views.renderDisplay($pNew);
-    this.endOfHand(); //dealer must have 17 or more--let's end the hand now.
+    this.endOfHand();
+     //dealer must have 17 or more--let's end the hand now.
   },
 
   endOfHand: function() {
@@ -95,7 +105,7 @@ var game = {
       this.views.renderDisplay($p);
       this.loser();
     } else if (playerTotal > 21) {
-      var $p = $('<p>').text("You've gone bust! Math hint: " + playerTotal + " is greater than 21.");
+      var $p = $('<p>').text("You've gone bust! Your total of " + playerTotal + " is greater than 21.");
       this.views.renderDisplay($p);
       this.loser();
     } else if ((playerTotal < dealerTotal) && dealerTotal <= 21) {
@@ -153,6 +163,7 @@ var game = {
   beginGame: function() {
     var $start = $('#start');
     $start.on('click', function(eventObject) {
+      console.log('beginning the game.');
       $start.text('Deal');
       $('#current-bet-div, #bankroll-div, #hit, #stand').removeClass('hidden');
       game.views.renderBetView();
@@ -175,7 +186,6 @@ var game = {
   },
 
   initialDeal: function() {
-    //CODE HERE FOR HANDS AFTER THE FIRST ONE?
     this.player.hand = [];
     this.dealer.hand = [];
     for (var i = 0; i < 4; i++) { //deals the initial two cards to each player TODO: change if multiplayer
@@ -301,20 +311,19 @@ var game = {
     var $start = $('#start')
     $start.text('Deal again');
     $start.on('click', function(eventObject) {
-      $start.removeClass('hidden')
+      console.log('resetting the hand.');
+      $start.removeClass('hidden');
       $('.bet-button, #hit, #start').removeAttr('disabled');
       if (game.player.currentBet > game.player.bankroll) {
         game.player.currentBet = 0;
       }
       game.player.blackjack = false;
       game.dealer.blackjack = false;
-      game.player.hand = [];
-      game.dealer.hand =[];
       game.player.cardTotal = 0;
       game.dealer.cardTotal = 0;
       game.views.cardViews = [];
       game.views.unrenderCardViews();
-      game.initialDeal(); //currently NOT resetting the deck between deals!
+      //game.initialDeal(); //currently NOT resetting the deck between deals!
     })
   }
 };
