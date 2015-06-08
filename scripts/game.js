@@ -21,12 +21,13 @@ var game = {
   },
 
   dealACard: function(person) { //'person' will be 'player' or 'dealer' accordingly
+    console.log('dealing card ' + cards.deck.splice(0,1)[0]);
     var dealtCard = cards.deck.splice(0,1)[0]; //removes card from the deck
     //note that this removes the TOPMOST card of the deck which means deck MUST be shuffled before calling this!
     dealtCard.handInWhich = person.name;
     person.hand.push(dealtCard); //puts the dealt card into the person's hand //checks to see if there's a blackjack (sorta obviously)
-    game.updateTotal(person); //will update the total score of the person's hand
     game.checkForBlackjack(person); //does exactly what you might think: checks for blackjack
+    game.updateTotal(person); //will update the total score of the person's hand
     game.views.addCardView(person);   //will create a new cardView for this card
   },
 
@@ -48,14 +49,14 @@ var game = {
       } //to see if total > 21, if so it will subtract 10 (counting that ace as 1 instead of 11). It will do this
     } //multiple times if you have multiple aces, each time checking to see if it has to subtract 10.
 
-    if (person == 'player') { //FIXME: why isn't this code running?
+    if (person.name == 'player') { //ISSUE FIXED. THIS CODE NOW RUNS.
       console.log('displaying revised total');
       var $p = $('<p>').text('Dealing card. New total is ' + person.cardTotal);
       this.views.renderDisplay($p);
     }
 
     if (person.cardTotal > 21) {
-      this.endOfHand();
+      this.endOfHand(); //whoops someone's bust
     }
   },
 
@@ -63,7 +64,7 @@ var game = {
     //console.log('checking for blackjack...' + 'hand-length ' + person.hand.length + '; point-total ' + person.cardTotal);
     console.log('checking for blackjack');
     if (person.hand.length === 2 && person.cardTotal === 21) { //if you have 2 cards and 21 points, then you've
-      person.blackjack = true; //got blackjack
+      person.blackjack = true; //the person got blackjack
       if (person.name === 'dealer') { //if dealer has blackjack hand is over!
         var $p = $('<p>').text('Dealer has blackjack!');
         this.views.renderDisplay($p);
@@ -175,11 +176,12 @@ var game = {
     $start.on('click', function(eventObject) {
       console.log('beginning the game.');
       $start.text('Deal');
-      $('#current-bet-div, #bankroll-div, #hit, #stand').removeClass('hidden');
+      $('#current-bet-div, #bankroll-div, #hit, #stand, #double-down').removeClass('hidden');
       game.views.renderBetView();
       game.views.renderBankroll();
       game.setBetButtons();
       $('#hit, #stand').removeAttr('disabled');
+      $('#insurance, #double-down').attr('disabled','true');
       game.$infoSection.html(''); //clears out the initial welcome message
       var $p = $('<p>').text('Please enter a bet to begin play.');
       game.views.renderDisplay($p);
@@ -205,6 +207,8 @@ var game = {
         game.dealACard(game.player); //1st and 3rd cards from top dealt to player
       }
     }
+    this.setDoubleDownButton();
+    console.log('setting double down button(?)');
     this.setHitButton();
   },
 
@@ -256,16 +260,39 @@ var game = {
     renderDisplay: function(message) {
       game.$infoSection.prepend(message); //this function sends messages to the central info-section div
       $ps = $('#display p');
-      if ($ps.length > 3) {
+      if ($ps.length > 4) {
         $ps[$ps.length - 1].remove();
       }
     },
+  },
+
+  setDoubleDownButton() {
+    var $doubleDown = $('#double-down');
+    $doubleDown.removeAttr('disabled');
+    $doubleDown.on('click', function(eventObject) {
+      eventObject.stopImmediatePropagation();
+      if (game.player.bankroll < game.player.currentBet) {
+        $p = $('<p>').text("Sorry, you don't have enough money in your bankroll to double down.");
+        game.views.renderDisplay($p);
+      } else {
+      $('#hit, #stand, #double-down').attr('disabled','true');
+      $p = $('<p>').text("Doubling down! Hitting one more card.");
+      game.views.renderDisplay($p);
+      game.player.bankroll -= game.player.currentBet;
+      game.player.currentBet *= 2;
+      game.views.renderBetView();
+      game.views.renderBankroll();
+      game.dealACard(game.player);
+      game.stand();
+      }
+    });
   },
 
   setStandButton: function() {
     var $stand = $('#stand');
     $stand.removeAttr('disabled');
     $stand.on('click', function(eventObject) {
+      $('#double-down').attr('disabled','true');
       var $p = $('<p>').text("OK, you're standing put... Dealer is now checking his cards.");
       game.views.renderDisplay($p);
       game.stand();
@@ -276,6 +303,10 @@ var game = {
     var $hit = $('#hit'); //heh heh...  what a $hitty variable...
     $hit.removeAttr('disabled');
     $hit.on('click', function(eventObject) {
+      // eventObject.preventDefault();
+      // eventObject.stopPropagation();
+      eventObject.stopImmediatePropagation();
+      $('#double-down').attr('disabled','true');
       var $p = $('<p>').text("Hitting ... here's another card."); //TODO I would like to display the new total
       game.views.renderDisplay($p);
       game.dealACard(game.player);
@@ -286,6 +317,7 @@ var game = {
   setBetButtons: function() {
     var increment = 25;
   $('#increment-up').on('click', function(eventObject) {
+    eventObject.stopImmediatePropagation();
       if (game.player.bankroll >= increment) {
         game.player.currentBet += increment;
         game.player.bankroll -= increment;
@@ -299,6 +331,7 @@ var game = {
     });
 
     $('#increment-down').on('click', function(eventObject) {
+      eventObject.stopImmediatePropagation();
       if (game.player.currentBet >= increment) {
         game.player.currentBet -= increment;
         game.player.bankroll += increment;
@@ -312,6 +345,7 @@ var game = {
   setAddMoneyButton: function() {
     console.log('adding $');
     $('#add-money').on('click', function(eventObject) {
+      eventObject.stopImmediatePropagation();
       alert('$1,000 has automatically been debited from your PayPal account.');
       game.player.bankroll += 1000;
       game.views.renderBankroll();

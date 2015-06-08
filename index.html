@@ -10,7 +10,9 @@
       <section id='player-section'>Player&nbsp;&nbsp;&nbsp;</section>
       <section id='info-section'><div id='display'>Welcome to Blackjack! Press 'start' to begin playing.</div>
       </section>
-      <section id='dealer-section'>Dealer&nbsp;&nbsp;&nbsp;</section>
+      <section id='dealer-section'>Dealer&nbsp;&nbsp;&nbsp;
+        <!--<div id='deck' class='card card-back'></div>-->
+      </section>
       <section id='controls'>
         <div id='current-bet-div' class='hidden'>
           <p id='current-bet'></p>
@@ -18,21 +20,24 @@
           <button id='increment-down' class = 'bet-button'>Decrease</button>
         </div>
         <button id='hit' class='hidden'>Hit</button>
+        <button id='double-down' class='hidden'>Double down</button>
         <button id='start'>Start</button>
         <button id='stand' class='hidden'>Stand</button>
+        <button id='insurance' class='hidden'>Insurance</button>
         <div id='bankroll-div' class='hidden'>
           <p id='bankroll'></p>
           <button id='add-money'>Add money</button>
-          <!-- PayPal Logo --><table height='50px' width='100px' border="0" cellpadding="10" cellspacing="0" align="center">
-            <tr><td align="center"></td></tr><tr><td align="center">
-            <a href="https://www.paypal.com/webapps/mpp/paypal-popup" title="How PayPal Works"
-            onclick="javascript:window.open('https://www.paypal.com/webapps/mpp/paypal-popup',
-            'WIPaypal','toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes,
-            resizable=yes, width=106, height=70'); return false;">
-            <img id='paypal' src="https://www.paypalobjects.com/webstatic/mktg/logo/AM_mc_vs_dc_ae.jpg"
-            border="0" alt="PayPal Acceptance Mark"></a></td></tr></table><!-- PayPal Logo -->
+          <!-- PayPal Logo <table height='20px' width='60px' border="0" cellpadding="10" cellspacing="0" align="center">
+                  <tr><td align="center"></td></tr><tr><td align="center">
+                  <a href="https://www.paypal.com/webapps/mpp/paypal-popup" title="How PayPal Works"
+                  onclick="javascript:window.open('https://www.paypal.com/webapps/mpp/paypal-popup',
+                  'WIPaypal','toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=yes,
+                  resizable=yes, width=60, height=20'); return false;">
+                  <img id='paypal' src="https://www.paypalobjects.com/webstatic/mktg/logo/AM_mc_vs_dc_ae.jpg"
+                  border="0" alt="PayPal Acceptance Mark"></a></td></tr></table>PayPal Logo -->
         </div>
       </section>
+
     </main>
     <script src="scripts/cards.js"></script>
     <script src="scripts/game.js"></script>
