@@ -1,7 +1,7 @@
 console.log('game.js loaded');
 
 var game = {
-  $infoSection: $('#info-section'), //jQuery object for the div that displays game messages
+  $infoSection: $('#display'), //jQuery object for the div that displays game messages
 
   player: { //TODO: create a player constructor function to add multiple players. way down the road!
     name: "player",
@@ -23,7 +23,6 @@ var game = {
   dealACard: function(person) { //'person' will be 'player' or 'dealer' accordingly
     var dealtCard = cards.deck.splice(0,1)[0]; //removes card from the deck
     //note that this removes the TOPMOST card of the deck which means deck MUST be shuffled before calling this!
-    //dealtCard.isDealt = true; //TODO: see if this property is necessary later!!
     dealtCard.handInWhich = person.name;
     person.hand.push(dealtCard); //puts the dealt card into the person's hand //checks to see if there's a blackjack (sorta obviously)
     game.updateTotal(person); //will update the total score of the person's hand
@@ -69,6 +68,7 @@ var game = {
         var $p = $('<p>').text('Dealer has blackjack!');
         this.views.renderDisplay($p);
         $('.dealer-card').removeClass('card-back');
+        console.log('I should have removed the dealer card back display. Did I?');
         this.endOfHand(); //end the hand
       } else if (this.dealer.blackjack === false && this.dealer.hand.length >= 2) {
         var $p = $('<p>').text('You have blackjack!');
@@ -82,9 +82,11 @@ var game = {
     $('#hit, #stand').attr('disabled', 'true') //disables the 'hit' and stand buttons so you can't hit after choosing to stand
     while (this.dealer.cardTotal < 17) { //dealer stands on 17 and up, hits on 16 and under
       var $p = $('<p>').text("Dealer is taking another card...");
+      console.log('dealer total is ' + this.dealer.cardTotal + ". Dealer takes another card.");
       this.views.renderDisplay($p);
       game.dealACard(game.dealer);//adds a card to the dealer's hand
     }
+    console.log(this.dealer.cardTotal + ' points for dealer. Dealer stands now.')
     var $pNew = $('<p>').text("Dealer is standing with " + this.dealer.hand.length + " cards. Let's see what they are.");
     this.views.renderDisplay($pNew);
     this.endOfHand();
@@ -101,18 +103,22 @@ var game = {
     var payout = this.views.makeCurrency(this.player.currentBet);
 
     if (this.dealer.blackjack) { //this code is hideous. TODO: refactor into separate function? Or
+      console.log('result: dealer blackjack');
       var $p = $('<p>').text("Dealer wins."); //come up with a cleaner way?
       this.views.renderDisplay($p);
       this.loser();
     } else if (playerTotal > 21) {
+      console.log('result: player bust');
       var $p = $('<p>').text("You've gone bust! Your total of " + playerTotal + " is greater than 21.");
       this.views.renderDisplay($p);
       this.loser();
     } else if ((playerTotal < dealerTotal) && dealerTotal <= 21) {
+      console.log('result: both under 21 but dealer > player');
       var $p = $('<p>').text("Sorry, you lose. Dealer total: " + dealerTotal + ", player total: " + playerTotal + ".");
       this.views.renderDisplay($p);
       this.loser();
     } else if (this.player.blackjack) {
+      console.log('result: player blackjack');
       var blackjackPayout = this.views.makeCurrency(1.5 * this.player.currentBet);
       var $p = $('<p>').text("Congratulations! Blackjack pays out at 3 to 2 for " + blackjackPayout + ".");
       this.views.renderDisplay($p);
@@ -120,14 +126,17 @@ var game = {
       this.views.renderBankroll();
       this.resetHand();
     } else if (dealerTotal > 21) {
+      console.log('result: dealer bust');
       var $p = $('<p>').text("Dealer has " + dealerTotal + " and has gone bust! Bet pays: " + payout + ".");
       this.views.renderDisplay($p);
       this.winner();
     } else if (playerTotal > dealerTotal) {
+      console.log('result: both under 21 but player > dealer');
       var $p = $('<p>').text("You win! Your total: " + playerTotal + ", dealer total: " + dealerTotal + ". Payout is " + payout + ".");
       this.views.renderDisplay($p);
       this.winner();
     } else if (playerTotal === dealerTotal) {
+      console.log('result: push');
       var $p = $('<p>').text("It's a push! Player and dealer are tied with " + playerTotal + " each. All bets refunded.");
       this.views.renderDisplay($p);
       this.resetHand();
@@ -154,6 +163,7 @@ var game = {
   },
 
   checkBankroll: function() {
+    console.log('checking bankroll');
     if (this.player.bankroll <= 0) {
       var $p = $('<p>').text("Uh-oh, you're out of cash... Press 'add money' to add more"); //TODO add more cash? RESET GAME?
       this.views.renderDisplay($p);
@@ -195,6 +205,7 @@ var game = {
         game.dealACard(game.player); //1st and 3rd cards from top dealt to player
       }
     }
+    this.setHitButton();
   },
 
   views: {
@@ -244,7 +255,7 @@ var game = {
 
     renderDisplay: function(message) {
       game.$infoSection.prepend(message); //this function sends messages to the central info-section div
-      $ps = $('#info-section p');
+      $ps = $('#display p');
       if ($ps.length > 3) {
         $ps[$ps.length - 1].remove();
       }
@@ -322,8 +333,10 @@ var game = {
       game.player.cardTotal = 0;
       game.dealer.cardTotal = 0;
       game.views.cardViews = [];
+      game.views.renderBankroll();
+      game.views.renderBetView();
       game.views.unrenderCardViews();
-      //game.initialDeal(); //currently NOT resetting the deck between deals!
+      game.initialDeal(); //currently NOT resetting the deck between deals!
     })
   }
 };

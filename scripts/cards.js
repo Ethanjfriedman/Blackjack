@@ -13,7 +13,7 @@ var cards = {
       this.value = cards.cardValues[valueIndex];
       this.longValue = cards.longCardValues[valueIndex];  //for use in css classes
       this.points = cards.getPoints(valueIndex);
-      this.isDealt = false;
+      //this.isDealt = false; commenting this out; I didn't end up using it -- yet.
       this.handInWhich= '';
     };
     for (var i = 0, slen = this.cardSuits.length; i < slen; i++) {
