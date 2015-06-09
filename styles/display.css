@@ -41,7 +41,7 @@ section {
   display: flex;
   flex-direction: column;
   overflow: scroll;
-  color: white;
+  color: HoneyDew;
 }
 
 p {
@@ -59,7 +59,7 @@ p {
   padding: 5px;
   border-radius: 5px;
   margin: 5px;
-  color: white;
+  color: HoneyDew;
 }
 
 button {

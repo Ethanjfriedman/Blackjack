@@ -6,13 +6,14 @@
   background-color: tan;
   margin-right: 10px;
   margin-left: 0px;
-  left: 110%;
+  align-self: flex-end;
   background-image: url(classic-playing-cards.png);
-  transition: left 1s ease;
+  transition: align-self 1s ease;
 }
 
 .visible {
   left: 0%;
+  align-self: flex-start;
 }
 
 .clubs {
